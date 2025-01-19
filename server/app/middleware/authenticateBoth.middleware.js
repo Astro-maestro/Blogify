@@ -15,8 +15,8 @@ function authenticateBoth(req, res, next) {
     }
 
     // Check if the user role is 'admin'
-    if (user.role !== "Admin" && user.role !== "Super Admin") {
-      return res.status(403).json({ message: "Access denied. Admins only." });
+    if (user.role !== "Admin" && user.role !== "PublicationHouse") {
+      return res.status(403).json({ message: "Access denied. Admins and Publication Houses only." });
     }
 
     // Attach user info to request and proceed

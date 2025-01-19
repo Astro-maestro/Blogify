@@ -1,8 +1,9 @@
 const passport = require("passport");
 const session = require("express-session");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const User = require("../modules/user/model/User");
-const Token = require('../modules/user/model/Token');
+const User = require("../modules/user/models/user.model");
+const Role = require("../modules/role/models/role.model");
+const Token = require('../modules/user/models/token.model');
 const jwt = require("jsonwebtoken");
 // Define the setup function to avoid naming conflicts
 const setupPassport = (app) => {
@@ -47,7 +48,12 @@ const setupPassport = (app) => {
               "User already exists with this Google ID:",
               existingUser
             );
-            return done(null, existingUser); // Return the existing user
+            return done(null, existingUser, { redirect: 'http://localhost:3000/' }); // Return the existing user
+          }
+
+          const employeeRole = await Role.findOne({ name: "Employee" });
+          if (!employeeRole) {
+            throw new Error('Employee role not found in the database');
           }
 
           // Create a new user if not found
@@ -59,7 +65,7 @@ const setupPassport = (app) => {
             image:
               profile.photos[0]?.value ||
               "https://www.jotform.com/blog/wp-content/uploads/2022/12/how-to-add-link-to-google-form-1280x500.jpg",
-            role: "Employee",
+            role: employeeRole._id,
             authProvider: "google",
             isVerified: true,
           });
@@ -96,7 +102,7 @@ const setupPassport = (app) => {
 
         } catch (error) {
           console.error("Error in Google Strategy:", error);
-          return done(error, null);
+          return done( null, false, { redirect: `http://localhost:3000/`});
         }
       }
     )
